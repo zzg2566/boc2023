@@ -32,10 +32,6 @@ export default function Home() {
 
   const nextProfile = () => selectProfile(activeIndex + 1, "next");
   const previousProfile = () => selectProfile(activeIndex - 1, "previous");
-  const openProfile = (index: number) => {
-    selectProfile(index);
-    window.setTimeout(() => document.getElementById("intro")?.scrollIntoView({ behavior: "smooth" }), 40);
-  };
 
   const swipeHandlers = {
     onTouchStart: (event: React.TouchEvent) => {
@@ -85,15 +81,15 @@ export default function Home() {
 
         <div className="hero-stats" aria-label="栏目内容统计">
           <div><strong>10</strong><span>位青年员工</span></div>
-          <div><strong>03</strong><span>个主题模块</span></div>
+          <div><strong>03</strong><span>模块合一</span></div>
           <div><strong>01</strong><span>份清廉初心</span></div>
         </div>
       </section>
 
-      <nav className="chapter-nav" aria-label="页面章节导航">
-        <a href="#portraits"><span>01</span>照片</a>
-        <a href="#intro"><span>02</span>自我介绍</a>
-        <a href="#reflection"><span>03</span>岗位感悟</a>
+      <nav className="chapter-nav" aria-label="页面内容导航">
+        <a href="#profile-photo"><span>01</span>员工照片</a>
+        <a href="#profile-intro"><span>02</span>自我介绍</a>
+        <a href="#profile-reflection"><span>03</span>岗位感悟</a>
       </nav>
 
       <section className="prologue section-pad" id="prologue" data-reveal>
@@ -111,57 +107,24 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="portraits section-pad" id="portraits" aria-labelledby="portraits-title">
+      <section className="profiles-section section-pad" id="profiles" aria-labelledby="profiles-title">
+        <div className="lotus lotus-profiles" aria-hidden="true"><i /><b /><em /><span /></div>
         <div className="section-heading light" data-reveal>
-          <div className="section-index"><span>01</span><i /></div>
+          <div className="section-index"><span>01–03</span><i /></div>
           <div>
-            <p className="eyebrow">YOUTH PORTRAITS</p>
-            <h2 id="portraits-title">青荷十人 · 青春风采</h2>
+            <p className="eyebrow">YOUTH INTEGRITY FILE</p>
+            <h2 id="profiles-title">一人一页 · 三章合一</h2>
           </div>
-          <p>十张青春面孔，十份岗位担当。点击照片，走近他们的清廉初心。</p>
+          <p>照片、自我介绍、岗位清廉感悟集中展示；点击序号或左右滑动即可切换员工。</p>
         </div>
 
-        <div className="portrait-grid">
-          {youthProfiles.map((profile, index) => (
-            <button
-              type="button"
-              className={`portrait-card${index === activeIndex ? " is-active" : ""}`}
-              onClick={() => openProfile(index)}
-              aria-label={`查看${profile.name}的自我介绍`}
-              key={profile.slot}
-              data-reveal
-            >
-              {profile.image ? (
-                <img src={profile.image} alt={`${profile.name}工作照片`} style={{ objectPosition: profile.imagePosition }} />
-              ) : (
-                <span className="portrait-placeholder" aria-hidden="true"><i /><b /><em /></span>
-              )}
-              <span className="portrait-shade" />
-              <span className="portrait-number">{pad(profile.slot)}</span>
-              <span className="portrait-info"><strong>{profile.name}</strong><small>{profile.department}</small></span>
-              <span className="portrait-keyword">{profile.keyword}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="intro-section section-pad" id="intro" aria-labelledby="intro-title">
-        <div className="section-heading" data-reveal>
-          <div className="section-index"><span>02</span><i /></div>
-          <div>
-            <p className="eyebrow dark">ABOUT ME</p>
-            <h2 id="intro-title">青春名片 · 向清而行</h2>
-          </div>
-          <p>左右滑动或点击序号，切换青年员工档案。</p>
-        </div>
-
-        <div className="profile-tabs" role="tablist" aria-label="选择青年员工">
+        <div className="profile-tabs compact-tabs" role="tablist" aria-label="选择青年员工">
           {youthProfiles.map((profile, index) => (
             <button
               type="button"
               role="tab"
               aria-selected={index === activeIndex}
-              aria-controls="intro-panel"
+              aria-controls="profile-panel"
               className={index === activeIndex ? "is-active" : ""}
               onClick={() => selectProfile(index)}
               key={profile.slot}
@@ -172,20 +135,20 @@ export default function Home() {
         </div>
 
         <article
-          className={`profile-stage slide-${direction}`}
-          id="intro-panel"
+          className={`merged-profile slide-${direction}`}
+          id="profile-panel"
           role="tabpanel"
           tabIndex={0}
           aria-live="polite"
-          aria-label={`${activeProfile.name}的自我介绍`}
-          key={`intro-${activeProfile.slot}`}
+          aria-label={`${activeProfile.name}的完整档案`}
+          key={activeProfile.slot}
           onKeyDown={(event) => {
             if (event.key === "ArrowLeft") previousProfile();
             if (event.key === "ArrowRight") nextProfile();
           }}
           {...swipeHandlers}
         >
-          <div className={`profile-photo photo-${activeProfile.imageLayout}`}>
+          <div className={`merged-photo photo-${activeProfile.imageLayout}`} id="profile-photo">
             {activeProfile.image ? (
               <>
                 <img className="profile-backdrop" src={activeProfile.image} alt="" aria-hidden="true" style={{ objectPosition: activeProfile.imagePosition }} />
@@ -193,7 +156,7 @@ export default function Home() {
               </>
             ) : (
               <div className="profile-photo-placeholder">
-                <span>NO. {pad(activeProfile.slot)}</span>
+                <span>MODULE 01 · PHOTO / NO. {pad(activeProfile.slot)}</span>
                 <i aria-hidden="true"><b /><em /></i>
                 <strong>照片待发布</strong>
                 <small>PORTRAIT MATERIAL PENDING</small>
@@ -201,66 +164,34 @@ export default function Home() {
             )}
             <div className="photo-meta"><span>BOC YOUTH</span><b>青荷 · {activeProfile.keyword}</b></div>
           </div>
-          <div className="profile-copy">
-            <div className="profile-count">YOUTH PROFILE <span>{pad(activeProfile.slot)} / 10</span></div>
-            <p className="profile-kicker">清风青年 · 岗位有我</p>
-            <h3>{activeProfile.name}</h3>
-            <p className="profile-role">{activeProfile.department}<i />{activeProfile.role}</p>
-            <div className="intro-quote"><span>自我介绍</span><p>{activeProfile.intro}</p></div>
-            <a href="#reflection">阅读岗位清廉感悟 <span aria-hidden="true">↘</span></a>
+
+          <div className="merged-content">
+            <header className="merged-header">
+              <div><p>YOUTH PROFILE · {pad(activeProfile.slot)} / 10</p><h3>{activeProfile.name}</h3></div>
+              <span>资料<br />待发布</span>
+              <p>{activeProfile.department}<i />{activeProfile.role}</p>
+            </header>
+
+            <section className="module-block" id="profile-intro">
+              <div className="module-label"><span>02</span><p>ABOUT ME<small>自我介绍</small></p></div>
+              <p>{activeProfile.intro}</p>
+            </section>
+
+            <section className="module-block module-reflection" id="profile-reflection">
+              <div className="module-label"><span>03</span><p>INTEGRITY AT WORK<small>清廉与岗位感悟</small></p></div>
+              <blockquote>“{activeProfile.reflection}”</blockquote>
+              <div className="reflection-sign"><span>岗位关键词</span><b>{activeProfile.keyword}</b></div>
+            </section>
           </div>
         </article>
 
-        <div className="profile-controls">
-          <button type="button" onClick={previousProfile} aria-label="上一位青年员工">← 上一位</button>
+        <div className="profile-switcher">
+          <button type="button" onClick={previousProfile} aria-label="上一位青年员工">← <span>上一位</span></button>
           <div><i style={{ width: `${((activeIndex + 1) / youthProfiles.length) * 100}%` }} /></div>
-          <span><b>{pad(activeIndex + 1)}</b> / 10</span>
-          <button type="button" onClick={nextProfile} aria-label="下一位青年员工">下一位 →</button>
+          <p><b>{pad(activeIndex + 1)}</b> / 10</p>
+          <button type="button" onClick={nextProfile} aria-label="下一位青年员工"><span>下一位</span> →</button>
         </div>
-      </section>
-
-      <section className="reflection-section section-pad" id="reflection" aria-labelledby="reflection-title">
-        <div className="lotus lotus-reflection" aria-hidden="true"><i /><b /><em /><span /></div>
-        <div className="section-heading light" data-reveal>
-          <div className="section-index"><span>03</span><i /></div>
-          <div>
-            <p className="eyebrow">INTEGRITY AT WORK</p>
-            <h2 id="reflection-title">清廉与岗位 · 我的感悟</h2>
-          </div>
-          <p>清廉不是远处的标语，而是每一次选择、每一道流程、每一个细节。</p>
-        </div>
-
-        <article className={`reflection-card slide-${direction}`} key={`reflection-${activeProfile.slot}`} {...swipeHandlers}>
-          <div className="reflection-side">
-            <span>{pad(activeProfile.slot)}</span>
-            <div className="reflection-avatar">
-              {activeProfile.image ? <img src={activeProfile.image} alt="" style={{ objectPosition: activeProfile.imagePosition }} /> : <span aria-hidden="true"><i /><b /></span>}
-            </div>
-            <div><strong>{activeProfile.name}</strong><small>{activeProfile.role}</small></div>
-          </div>
-          <div className="reflection-copy">
-            <p className="reflection-label"><span>岗位关键词</span>{activeProfile.keyword}</p>
-            <blockquote>“{activeProfile.reflection}”</blockquote>
-            <div className="signature"><span>青年清廉寄语</span><b>{activeProfile.name}</b></div>
-          </div>
-        </article>
-
-        <div className="reflection-nav" aria-label="切换岗位感悟">
-          <button type="button" onClick={previousProfile} aria-label="上一位感悟">←</button>
-          <div className="reflection-dots">
-            {youthProfiles.map((profile, index) => (
-              <button
-                type="button"
-                className={index === activeIndex ? "is-active" : ""}
-                onClick={() => selectProfile(index)}
-                aria-label={`查看${profile.name}的岗位感悟`}
-                aria-current={index === activeIndex ? "true" : undefined}
-                key={profile.slot}
-              ><span>{pad(profile.slot)}</span></button>
-            ))}
-          </div>
-          <button type="button" onClick={nextProfile} aria-label="下一位感悟">→</button>
-        </div>
+        <p className="swipe-tip">手机端可左右滑动切换员工档案</p>
       </section>
 
       <section className="closing section-pad" data-reveal>
