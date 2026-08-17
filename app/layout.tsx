@@ -1,0 +1,32 @@
+import type { Metadata, Viewport } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "青荷守廉｜青年廉洁文化｜中国银行益阳分行",
+  description: "莲心守正，清风润青。中国银行益阳分行青年廉洁文化宣传主题 H5。",
+  applicationName: "青荷守廉",
+  icons: {
+    icon: "/boc-logo.jpg",
+    shortcut: "/boc-logo.jpg",
+  },
+  openGraph: {
+    type: "website",
+    title: "青荷守廉｜青年廉洁文化",
+    description: "莲心守正，清风润青。知敬畏、存戒惧、守底线。",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0a463d",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="zh-CN">
+      <body>{children}</body>
+    </html>
+  );
+}
