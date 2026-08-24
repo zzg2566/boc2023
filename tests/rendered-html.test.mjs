@@ -23,7 +23,7 @@ test("renders the 青荷守廉 H5", async () => {
   assert.match(html, /2023届青年员工廉洁感悟分享专栏/);
   assert.match(html, /莲心守正/);
   assert.match(html, /郭丽莎/);
-  assert.match(html, /周欣妍/);
+  assert.match(html, /邹欣妍/);
   assert.match(html, /中国银行益阳分行团委/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
 });
