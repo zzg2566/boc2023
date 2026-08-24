@@ -2,16 +2,16 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "青荷守廉｜青年廉洁文化｜中国银行益阳分行",
-  description: "莲心守正，清风润青。中国银行益阳分行青年廉洁文化宣传主题 H5。",
+  title: "青荷守廉｜2023届青年员工廉洁感悟分享专栏",
+  description: "莲心守正，清风润青。中国银行益阳分行2023届青年员工廉洁感悟分享专栏。",
   applicationName: "青荷守廉",
   icons: {
-    icon: "/boc-logo.jpg",
-    shortcut: "/boc-logo.jpg",
+    icon: "/boc-logo.png",
+    shortcut: "/boc-logo.png",
   },
   openGraph: {
     type: "website",
-    title: "青荷守廉｜青年廉洁文化",
+    title: "青荷守廉｜2023届青年员工廉洁感悟分享专栏",
     description: "莲心守正，清风润青。知敬畏、存戒惧、守底线。",
   },
 };

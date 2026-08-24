@@ -1,5 +1,8 @@
 "use client";
 
+/* The tab panel deliberately supports keyboard arrows and touch swipes. */
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+
 import { useEffect, useRef, useState } from "react";
 import { youthProfiles } from "./profiles";
 
@@ -9,6 +12,7 @@ export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState<"next" | "previous">("next");
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const tabsRef = useRef<HTMLDivElement | null>(null);
   const activeProfile = youthProfiles[activeIndex];
 
   useEffect(() => {
@@ -22,6 +26,16 @@ export default function Home() {
     items.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const tabList = tabsRef.current;
+    const activeTab = tabList?.querySelector<HTMLElement>("button.is-active");
+    if (!tabList || !activeTab || tabList.scrollWidth <= tabList.clientWidth) return;
+
+    const target = activeTab.offsetLeft - (tabList.clientWidth - activeTab.offsetWidth) / 2;
+    const maximum = tabList.scrollWidth - tabList.clientWidth;
+    tabList.scrollTo({ left: Math.max(0, Math.min(target, maximum)), behavior: "smooth" });
+  }, [activeIndex]);
 
   const selectProfile = (index: number, nextDirection?: "next" | "previous") => {
     const normalized = (index + youthProfiles.length) % youthProfiles.length;
@@ -62,7 +76,7 @@ export default function Home() {
 
         <header className="brand-bar">
           <a className="brand" href="#top" aria-label="返回页面顶部">
-            <span className="brand-logo"><img src="/boc-logo.jpg" alt="" /></span>
+            <span className="brand-logo"><img src="/boc-logo.png" alt="" /></span>
             <span className="brand-name">
               <strong>中国银行益阳分行</strong>
               <small>BANK OF CHINA · YIYANG BRANCH</small>
@@ -72,7 +86,7 @@ export default function Home() {
         </header>
 
         <div className="hero-copy">
-          <p className="eyebrow"><span>BOC YOUTH · INTEGRITY</span> 青年廉洁文化主题 H5</p>
+          <p className="eyebrow hero-kicker"><span>BOC YOUTH · INTEGRITY</span><strong>2023届青年员工廉洁感悟分享专栏</strong></p>
           <h1 id="hero-title"><span>青荷</span><span>守廉</span></h1>
           <p className="hero-line">莲心守正 <i /> 清风润青</p>
           <p className="hero-intro">扣好职业生涯“第一粒扣子”，涵养清正品格，筑牢思想防线，坚守金融从业人员廉洁从业底线。</p>
@@ -118,7 +132,7 @@ export default function Home() {
           <p>照片、自我介绍、岗位清廉感悟集中展示；点击序号或左右滑动即可切换员工。</p>
         </div>
 
-        <div className="profile-tabs compact-tabs" role="tablist" aria-label="选择青年员工">
+        <div className="profile-tabs compact-tabs" role="tablist" aria-label="选择青年员工" ref={tabsRef}>
           {youthProfiles.map((profile, index) => (
             <button
               type="button"
@@ -168,7 +182,7 @@ export default function Home() {
           <div className="merged-content">
             <header className="merged-header">
               <div><p>YOUTH PROFILE · {pad(activeProfile.slot)} / 10</p><h3>{activeProfile.name}</h3></div>
-              <span>资料<br />待发布</span>
+              <span>{activeProfile.pending ? <>资料<br />待补充</> : <>清廉<br />感悟</>}</span>
               <p>{activeProfile.department}<i />{activeProfile.role}</p>
             </header>
 
@@ -203,8 +217,12 @@ export default function Home() {
       </section>
 
       <footer className="site-footer">
-        <div className="footer-brand"><img src="/boc-logo.jpg" alt="" /><span><strong>中国银行益阳分行</strong><small>BANK OF CHINA · YIYANG BRANCH</small></span></div>
-        <p>青年廉洁文化主题宣传 · 青荷守廉</p>
+        <div className="footer-brand"><img src="/boc-logo.png" alt="" /><span><strong>中国银行益阳分行</strong><small>BANK OF CHINA · YIYANG BRANCH</small></span></div>
+        <div className="footer-meta" aria-label="栏目制作信息">
+          <p><b>来源</b> 中国银行益阳分行团委</p>
+          <p><b>编辑</b> 曾子刚、吴希雅</p>
+          <p><b>审核</b> 刘娟</p>
+        </div>
       </footer>
     </main>
   );
