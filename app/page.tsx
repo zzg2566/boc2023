@@ -15,6 +15,7 @@ export default function Home() {
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [musicPlaying, setMusicPlaying] = useState(false);
+  const [photoReady, setPhotoReady] = useState(true);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const tabsRef = useRef<HTMLDivElement | null>(null);
   const musicRef = useRef<ReturnType<typeof createSummerPondMusic> | null>(null);
@@ -33,10 +34,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    youthProfiles.forEach((profile) => {
+    const images = youthProfiles.map((profile) => {
       const image = new Image();
       image.src = profile.image;
+      return image;
     });
+    return () => { images.forEach((image) => { image.src = ""; }); };
   }, []);
 
   useEffect(() => {
@@ -78,6 +81,7 @@ export default function Home() {
   const selectProfile = (index: number, nextDirection?: "next" | "previous") => {
     const normalized = (index + youthProfiles.length) % youthProfiles.length;
     if (normalized === activeIndex) return;
+    setPhotoReady(false);
     setDirection(nextDirection || (normalized > activeIndex ? "next" : "previous"));
     setActiveIndex(normalized);
   };
@@ -243,11 +247,11 @@ export default function Home() {
           }}
           {...swipeHandlers}
         >
-          <div className={`merged-photo photo-${activeProfile.imageLayout}`} id="profile-photo">
+          <div className={`merged-photo photo-${activeProfile.imageLayout}${photoReady ? "" : " is-photo-loading"}`} id="profile-photo">
             {activeProfile.image ? (
               <>
                 <img className="profile-backdrop" src={activeProfile.image} alt="" aria-hidden="true" style={{ objectPosition: activeProfile.imagePosition }} />
-                <div className="profile-photo-frame"><img className="profile-main-photo" src={activeProfile.image} alt={`${activeProfile.name}个人照片`} style={{ objectPosition: activeProfile.imagePosition }} /></div>
+                <div className="profile-photo-frame"><img className="profile-main-photo" src={activeProfile.image} alt={`${activeProfile.name}个人照片`} style={{ objectPosition: activeProfile.imagePosition }} onLoad={() => setPhotoReady(true)} /></div>
               </>
             ) : (
               <div className="profile-photo-placeholder">

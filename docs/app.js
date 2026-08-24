@@ -128,10 +128,16 @@ const panel = document.querySelector("#profile-panel");
 const profileSelect = document.querySelector("#profile-select");
 let activeIndex = 0;
 let touchStart = null;
+let photoRenderToken = 0;
+
+const preloadedPhotos = profiles.map((profile) => {
+  const image = new Image();
+  image.decoding = "async";
+  image.src = profile.image;
+  return image;
+});
 
 profiles.forEach((profile, index) => {
-  const preload = new Image();
-  preload.src = profile.image;
   const button = document.createElement("button");
   button.type = "button";
   button.role = "tab";
@@ -172,13 +178,32 @@ function renderProfile(direction = "next") {
   const photo = document.querySelector("#profile-main-photo");
   const backdrop = document.querySelector("#profile-backdrop");
   const photoPanel = document.querySelector("#profile-photo");
-  photo.src = profile.image;
   photo.alt = `${profile.name}个人照片`;
   photo.style.objectPosition = profile.imagePosition;
-  backdrop.src = profile.image;
   backdrop.style.objectPosition = profile.imagePosition;
   photoPanel.classList.toggle("photo-portrait", profile.imageLayout === "portrait");
   photoPanel.classList.toggle("photo-landscape", profile.imageLayout === "landscape");
+  const currentPhotoToken = ++photoRenderToken;
+  photoPanel.classList.add("is-photo-loading");
+  photo.removeAttribute("src");
+  backdrop.removeAttribute("src");
+  const preloadedPhoto = preloadedPhotos[activeIndex];
+  const ready = preloadedPhoto.complete
+    ? Promise.resolve(preloadedPhoto.naturalWidth > 0)
+    : new Promise((resolve) => {
+        preloadedPhoto.addEventListener("load", () => resolve(true), { once: true });
+        preloadedPhoto.addEventListener("error", () => resolve(false), { once: true });
+      });
+  ready.then(async (loaded) => {
+    if (!loaded || currentPhotoToken !== photoRenderToken) return;
+    try { await preloadedPhoto.decode(); } catch { /* The load event already confirmed the bitmap. */ }
+    if (currentPhotoToken !== photoRenderToken) return;
+    photo.src = profile.image;
+    backdrop.src = profile.image;
+    requestAnimationFrame(() => {
+      if (currentPhotoToken === photoRenderToken) photoPanel.classList.remove("is-photo-loading");
+    });
+  });
   document.querySelector("#photo-keyword").textContent = `青荷 · ${profile.keyword}`;
   document.querySelector("#profile-count").textContent = `YOUTH PROFILE · ${number} / 10`;
   document.querySelector("#profile-name").textContent = profile.name;
@@ -283,20 +308,6 @@ function createSummerPondMusic() {
     oscillator.stop(when + duration + 0.05);
   }
 
-  function waterDrop(when) {
-    if (!context || !master) return;
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(880, when);
-    oscillator.frequency.exponentialRampToValueAtTime(360, when + 0.24);
-    gain.gain.setValueAtTime(0.018, when);
-    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.34);
-    oscillator.connect(gain).connect(master);
-    oscillator.start(when);
-    oscillator.stop(when + 0.36);
-  }
-
   function cicada(when) {
     if (!context || !master) return;
     for (let index = 0; index < 5; index += 1) {
@@ -319,7 +330,6 @@ function createSummerPondMusic() {
     const now = context.currentTime + 0.06;
     tone(notes[step % notes.length], now, 1.5, 0.026);
     if (step % 4 === 0) tone(notes[(step + 5) % notes.length] / 2, now, 2.2, 0.012);
-    if (step % 6 === 3) waterDrop(now + 0.55);
     if (step % 16 === 11) cicada(now + 0.9);
     step += 1;
   }

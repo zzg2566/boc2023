@@ -26,20 +26,6 @@ export function createSummerPondMusic() {
     oscillator.stop(when + duration + 0.05);
   };
 
-  const waterDrop = (when: number) => {
-    if (!context || !master) return;
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(880, when);
-    oscillator.frequency.exponentialRampToValueAtTime(360, when + 0.24);
-    gain.gain.setValueAtTime(0.018, when);
-    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.34);
-    oscillator.connect(gain).connect(master);
-    oscillator.start(when);
-    oscillator.stop(when + 0.36);
-  };
-
   const cicada = (when: number) => {
     if (!context || !master) return;
     for (let index = 0; index < 5; index += 1) {
@@ -62,7 +48,6 @@ export function createSummerPondMusic() {
     const now = context.currentTime + 0.06;
     tone(notes[step % notes.length], now, 1.5, 0.026);
     if (step % 4 === 0) tone(notes[(step + 5) % notes.length] / 2, now, 2.2, 0.012);
-    if (step % 6 === 3) waterDrop(now + 0.55);
     if (step % 16 === 11) cicada(now + 0.9);
     step += 1;
   };
