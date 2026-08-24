@@ -328,8 +328,8 @@ function createSummerPondMusic() {
   function schedule() {
     if (!context || !running) return;
     const now = context.currentTime + 0.06;
-    tone(notes[step % notes.length], now, 1.5, 0.026);
-    if (step % 4 === 0) tone(notes[(step + 5) % notes.length] / 2, now, 2.2, 0.012);
+    tone(notes[step % notes.length], now, 1.5, 0.045);
+    if (step % 4 === 0) tone(notes[(step + 5) % notes.length] / 2, now, 2.2, 0.018);
     if (step % 16 === 11) cicada(now + 0.9);
     step += 1;
   }
@@ -345,7 +345,7 @@ function createSummerPondMusic() {
     master.connect(context.destination);
     master.gain.cancelScheduledValues(context.currentTime);
     master.gain.setValueAtTime(0.0001, context.currentTime);
-    master.gain.exponentialRampToValueAtTime(0.55, context.currentTime + 1.2);
+    master.gain.exponentialRampToValueAtTime(0.72, context.currentTime + 1.2);
     running = true;
     schedule();
     timer = window.setInterval(schedule, 900);
