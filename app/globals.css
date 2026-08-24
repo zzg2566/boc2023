@@ -283,8 +283,8 @@ main { width: min(100%, 1180px); min-height: 100vh; margin: 0 auto; overflow: hi
   .hero { min-height: 760px; }
   .brand-bar { padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 16px; }
   .brand-name small { display: none; }
-  .brand-logo { width: 38px; height: 38px; }
-  .brand-logo img { width: 100%; height: 100%; }
+  .brand-logo { flex: 0 0 38px; width: 38px; min-width: 38px; max-width: 38px; height: 38px; min-height: 38px; max-height: 38px; aspect-ratio: 1/1; }
+  .brand-logo img { display: block; width: 100%; height: 100%; aspect-ratio: 1/1; }
   .brand { flex: 1; }
   .column-tag { display: none; }
   .hero-copy .eyebrow { max-width: 100%; font-size: 8px; line-height: 1.7; letter-spacing: .12em; }
