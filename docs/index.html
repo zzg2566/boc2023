@@ -7,11 +7,15 @@
     <meta name="description" content="青荷守廉——中国银行益阳分行2023届青年员工廉洁感悟分享专栏" />
     <title>青荷守廉｜2023届青年员工廉洁感悟分享专栏</title>
     <link rel="icon" href="./boc-logo.png" />
-    <link rel="stylesheet" href="./style.css" />
-    <script src="./app.js" defer></script>
+    <link rel="stylesheet" href="./style.css?v=20260824-final" />
+    <script src="./app.js?v=20260824-final" defer></script>
   </head>
   <body>
     <main>
+      <button class="music-toggle" id="music-toggle" type="button" aria-pressed="false" aria-label="播放夏日荷塘轻音乐">
+        <span class="music-icon" aria-hidden="true"><i></i><b></b></span>
+        <span><small>SUMMER POND</small><span id="music-label">开启夏荷轻音</span></span>
+      </button>
       <section class="hero" id="top" aria-labelledby="hero-title">
         <div class="hero-water" aria-hidden="true"></div>
         <div class="hero-orbit orbit-one" aria-hidden="true"></div>
@@ -78,10 +82,16 @@
 
         <div class="profile-tabs compact-tabs" id="profile-tabs" role="tablist" aria-label="选择青年员工"></div>
 
+        <div class="profile-mobile-nav" aria-label="手机端员工选择">
+          <button type="button" id="mobile-previous" aria-label="上一位青年员工">←</button>
+          <label><span>当前员工</span><select id="profile-select" aria-label="选择青年员工"></select></label>
+          <button type="button" id="mobile-next" aria-label="下一位青年员工">→</button>
+        </div>
+
         <article class="merged-profile slide-next" id="profile-panel" role="tabpanel" tabindex="0" aria-live="polite">
           <div class="merged-photo photo-portrait" id="profile-photo">
             <img class="profile-backdrop" id="profile-backdrop" src="./people/01-guolisha.webp" alt="" aria-hidden="true" />
-            <img class="profile-main-photo" id="profile-main-photo" src="./people/01-guolisha.webp" alt="郭丽莎个人照片" />
+            <div class="profile-photo-frame"><img class="profile-main-photo" id="profile-main-photo" src="./people/01-guolisha.webp" alt="郭丽莎个人照片" /></div>
             <div class="photo-meta"><span>BOC YOUTH</span><b id="photo-keyword">青荷 · 公平公正</b></div>
           </div>
 

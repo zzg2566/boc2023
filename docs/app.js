@@ -125,10 +125,13 @@ const profiles = [
 const pad = (value) => String(value).padStart(2, "0");
 const tabs = document.querySelector("#profile-tabs");
 const panel = document.querySelector("#profile-panel");
+const profileSelect = document.querySelector("#profile-select");
 let activeIndex = 0;
 let touchStart = null;
 
 profiles.forEach((profile, index) => {
+  const preload = new Image();
+  preload.src = profile.image;
   const button = document.createElement("button");
   button.type = "button";
   button.role = "tab";
@@ -136,6 +139,10 @@ profiles.forEach((profile, index) => {
   button.innerHTML = `<span>${pad(profile.slot)}</span><small>${profile.name}</small>`;
   button.addEventListener("click", () => selectProfile(index));
   tabs.append(button);
+  const option = document.createElement("option");
+  option.value = String(index);
+  option.textContent = `${pad(profile.slot)} · ${profile.name}`;
+  profileSelect.append(option);
 });
 
 function selectProfile(index, direction) {
@@ -148,6 +155,7 @@ function selectProfile(index, direction) {
 function renderProfile(direction = "next") {
   const profile = profiles[activeIndex];
   const number = pad(profile.slot);
+  profileSelect.value = String(activeIndex);
 
   tabs.querySelectorAll("button").forEach((button, index) => {
     const selected = index === activeIndex;
@@ -184,13 +192,19 @@ function renderProfile(direction = "next") {
   document.querySelector("#profile-progress").style.width = `${((activeIndex + 1) / profiles.length) * 100}%`;
   panel.setAttribute("aria-label", `${profile.name}的完整档案`);
 
-  panel.classList.remove("slide-next", "slide-previous");
+  panel.getAnimations().forEach((animation) => animation.cancel());
+  panel.classList.remove("slide-next", "slide-previous", "is-dragging");
+  panel.style.removeProperty("transform");
+  panel.style.removeProperty("opacity");
   void panel.offsetWidth;
   panel.classList.add(`slide-${direction}`);
 }
 
 document.querySelector("#previous-profile").addEventListener("click", () => selectProfile(activeIndex - 1, "previous"));
 document.querySelector("#next-profile").addEventListener("click", () => selectProfile(activeIndex + 1, "next"));
+document.querySelector("#mobile-previous").addEventListener("click", () => selectProfile(activeIndex - 1, "previous"));
+document.querySelector("#mobile-next").addEventListener("click", () => selectProfile(activeIndex + 1, "next"));
+profileSelect.addEventListener("change", () => selectProfile(Number(profileSelect.value)));
 
 panel.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft") selectProfile(activeIndex - 1, "previous");
@@ -200,6 +214,18 @@ panel.addEventListener("keydown", (event) => {
 panel.addEventListener("touchstart", (event) => {
   const touch = event.changedTouches[0];
   touchStart = { x: touch.clientX, y: touch.clientY };
+  panel.classList.add("is-dragging");
+}, { passive: true });
+
+panel.addEventListener("touchmove", (event) => {
+  if (!touchStart) return;
+  const touch = event.changedTouches[0];
+  const deltaX = touch.clientX - touchStart.x;
+  const deltaY = touch.clientY - touchStart.y;
+  if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
+  const offset = Math.sign(deltaX) * Math.min(Math.abs(deltaX) * 0.82, 130);
+  panel.style.transform = `translate3d(${offset}px,0,0) scale(${1 - Math.min(Math.abs(offset) / 2500, 0.025)})`;
+  panel.style.opacity = String(1 - Math.min(Math.abs(offset) / 650, 0.18));
 }, { passive: true });
 
 panel.addEventListener("touchend", (event) => {
@@ -208,9 +234,19 @@ panel.addEventListener("touchend", (event) => {
   const deltaX = touch.clientX - touchStart.x;
   const deltaY = touch.clientY - touchStart.y;
   touchStart = null;
+  panel.classList.remove("is-dragging");
+  panel.style.removeProperty("transform");
+  panel.style.removeProperty("opacity");
   if (Math.abs(deltaX) > 46 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
     selectProfile(activeIndex + (deltaX < 0 ? 1 : -1), deltaX < 0 ? "next" : "previous");
   }
+}, { passive: true });
+
+panel.addEventListener("touchcancel", () => {
+  touchStart = null;
+  panel.classList.remove("is-dragging");
+  panel.style.removeProperty("transform");
+  panel.style.removeProperty("opacity");
 }, { passive: true });
 
 const revealObserver = new IntersectionObserver((entries) => {
@@ -221,3 +257,133 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 document.querySelectorAll("[data-reveal]").forEach((item) => revealObserver.observe(item));
 renderProfile();
+
+function createSummerPondMusic() {
+  let context = null;
+  let master = null;
+  let timer = null;
+  let step = 0;
+  let running = false;
+  const notes = [261.63,329.63,392,440,392,329.63,293.66,261.63,220,261.63,329.63,293.66];
+
+  function tone(frequency, when, duration, volume) {
+    if (!context || !master) return;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const filter = context.createBiquadFilter();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, when);
+    filter.type = "lowpass";
+    filter.frequency.value = 1500;
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.exponentialRampToValueAtTime(volume, when + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+    oscillator.connect(filter).connect(gain).connect(master);
+    oscillator.start(when);
+    oscillator.stop(when + duration + 0.05);
+  }
+
+  function waterDrop(when) {
+    if (!context || !master) return;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, when);
+    oscillator.frequency.exponentialRampToValueAtTime(360, when + 0.24);
+    gain.gain.setValueAtTime(0.018, when);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.34);
+    oscillator.connect(gain).connect(master);
+    oscillator.start(when);
+    oscillator.stop(when + 0.36);
+  }
+
+  function cicada(when) {
+    if (!context || !master) return;
+    for (let index = 0; index < 5; index += 1) {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = when + index * 0.075;
+      oscillator.type = "triangle";
+      oscillator.frequency.value = 3900 + index * 90;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.0025, start + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.055);
+      oscillator.connect(gain).connect(master);
+      oscillator.start(start);
+      oscillator.stop(start + 0.06);
+    }
+  }
+
+  function schedule() {
+    if (!context || !running) return;
+    const now = context.currentTime + 0.06;
+    tone(notes[step % notes.length], now, 1.5, 0.026);
+    if (step % 4 === 0) tone(notes[(step + 5) % notes.length] / 2, now, 2.2, 0.012);
+    if (step % 6 === 3) waterDrop(now + 0.55);
+    if (step % 16 === 11) cicada(now + 0.9);
+    step += 1;
+  }
+
+  async function start() {
+    if (running) return true;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return false;
+    context ||= new AudioContextClass();
+    if (context.state === "suspended") await context.resume();
+    master ||= context.createGain();
+    master.disconnect();
+    master.connect(context.destination);
+    master.gain.cancelScheduledValues(context.currentTime);
+    master.gain.setValueAtTime(0.0001, context.currentTime);
+    master.gain.exponentialRampToValueAtTime(0.55, context.currentTime + 1.2);
+    running = true;
+    schedule();
+    timer = window.setInterval(schedule, 900);
+    return true;
+  }
+
+  function pause() {
+    if (!running) return;
+    running = false;
+    if (timer !== null) window.clearInterval(timer);
+    timer = null;
+    if (context && master) {
+      master.gain.cancelScheduledValues(context.currentTime);
+      master.gain.setTargetAtTime(0.0001, context.currentTime, 0.15);
+    }
+  }
+
+  return { start, pause, get isRunning() { return running; } };
+}
+
+const pondMusic = createSummerPondMusic();
+const musicToggle = document.querySelector("#music-toggle");
+const musicLabel = document.querySelector("#music-label");
+function updateMusicButton(playing) {
+  musicToggle.classList.toggle("is-playing", playing);
+  musicToggle.setAttribute("aria-pressed", String(playing));
+  musicToggle.setAttribute("aria-label", playing ? "暂停夏日荷塘轻音乐" : "播放夏日荷塘轻音乐");
+  musicLabel.textContent = playing ? "荷塘轻音中" : "开启夏荷轻音";
+}
+musicToggle.addEventListener("click", async () => {
+  if (pondMusic.isRunning) {
+    pondMusic.pause();
+    updateMusicButton(false);
+  } else {
+    updateMusicButton(await pondMusic.start());
+  }
+});
+async function unlockMusic(event) {
+  if (event.target.closest?.("#music-toggle")) return;
+  updateMusicButton(await pondMusic.start());
+  window.removeEventListener("pointerdown", unlockMusic);
+  window.removeEventListener("keydown", unlockMusic);
+}
+window.addEventListener("pointerdown", unlockMusic);
+window.addEventListener("keydown", unlockMusic);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && pondMusic.isRunning) {
+    pondMusic.pause();
+    updateMusicButton(false);
+  }
+});

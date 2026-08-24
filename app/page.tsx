@@ -5,14 +5,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { youthProfiles } from "./profiles";
+import { createSummerPondMusic } from "./summer-pond-music";
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
 export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState<"next" | "previous">("next");
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [musicPlaying, setMusicPlaying] = useState(false);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const tabsRef = useRef<HTMLDivElement | null>(null);
+  const musicRef = useRef<ReturnType<typeof createSummerPondMusic> | null>(null);
   const activeProfile = youthProfiles[activeIndex];
 
   useEffect(() => {
@@ -25,6 +30,39 @@ export default function Home() {
     );
     items.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    youthProfiles.forEach((profile) => {
+      const image = new Image();
+      image.src = profile.image;
+    });
+  }, []);
+
+  useEffect(() => {
+    const music = createSummerPondMusic();
+    musicRef.current = music;
+    const unlock = async (event: Event) => {
+      if (event.target instanceof Element && event.target.closest(".music-toggle")) return;
+      if (await music.start()) setMusicPlaying(true);
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    const visibility = () => {
+      if (document.hidden && music.isRunning) {
+        music.pause();
+        setMusicPlaying(false);
+      }
+    };
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      document.removeEventListener("visibilitychange", visibility);
+      music.destroy();
+    };
   }, []);
 
   useEffect(() => {
@@ -51,10 +89,24 @@ export default function Home() {
     onTouchStart: (event: React.TouchEvent) => {
       const touch = event.changedTouches[0];
       touchStart.current = { x: touch.clientX, y: touch.clientY };
+      setIsDragging(true);
+      setDragOffset(0);
+    },
+    onTouchMove: (event: React.TouchEvent) => {
+      const start = touchStart.current;
+      if (!start) return;
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - start.x;
+      const deltaY = touch.clientY - start.y;
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        setDragOffset(Math.sign(deltaX) * Math.min(Math.abs(deltaX) * 0.82, 130));
+      }
     },
     onTouchEnd: (event: React.TouchEvent) => {
       const start = touchStart.current;
       touchStart.current = null;
+      setIsDragging(false);
+      setDragOffset(0);
       if (!start) return;
       const touch = event.changedTouches[0];
       const deltaX = touch.clientX - start.x;
@@ -64,10 +116,30 @@ export default function Home() {
         else previousProfile();
       }
     },
+    onTouchCancel: () => {
+      touchStart.current = null;
+      setIsDragging(false);
+      setDragOffset(0);
+    },
+  };
+
+  const toggleMusic = async () => {
+    const music = musicRef.current;
+    if (!music) return;
+    if (music.isRunning) {
+      music.pause();
+      setMusicPlaying(false);
+    } else {
+      setMusicPlaying(await music.start());
+    }
   };
 
   return (
     <main>
+      <button className={`music-toggle${musicPlaying ? " is-playing" : ""}`} type="button" onClick={toggleMusic} aria-pressed={musicPlaying} aria-label={musicPlaying ? "暂停夏日荷塘轻音乐" : "播放夏日荷塘轻音乐"}>
+        <span className="music-icon" aria-hidden="true"><i /><b /></span>
+        <span><small>SUMMER POND</small>{musicPlaying ? "荷塘轻音中" : "开启夏荷轻音"}</span>
+      </button>
       <section className="hero" id="top" aria-labelledby="hero-title">
         <div className="hero-water" aria-hidden="true" />
         <div className="hero-orbit orbit-one" aria-hidden="true" />
@@ -148,14 +220,23 @@ export default function Home() {
           ))}
         </div>
 
+        <div className="profile-mobile-nav" aria-label="手机端员工选择">
+          <button type="button" onClick={previousProfile} aria-label="上一位青年员工">←</button>
+          <label><span>当前员工</span><select value={activeIndex} onChange={(event) => selectProfile(Number(event.target.value))} aria-label="选择青年员工">
+            {youthProfiles.map((profile, index) => <option value={index} key={profile.slot}>{pad(profile.slot)} · {profile.name}</option>)}
+          </select></label>
+          <button type="button" onClick={nextProfile} aria-label="下一位青年员工">→</button>
+        </div>
+
         <article
-          className={`merged-profile slide-${direction}`}
+          className={`merged-profile slide-${direction}${isDragging ? " is-dragging" : ""}`}
           id="profile-panel"
           role="tabpanel"
           tabIndex={0}
           aria-live="polite"
           aria-label={`${activeProfile.name}的完整档案`}
           key={activeProfile.slot}
+          style={isDragging ? { transform: `translate3d(${dragOffset}px,0,0) scale(${1 - Math.min(Math.abs(dragOffset) / 2500, 0.025)})`, opacity: 1 - Math.min(Math.abs(dragOffset) / 650, 0.18) } : undefined}
           onKeyDown={(event) => {
             if (event.key === "ArrowLeft") previousProfile();
             if (event.key === "ArrowRight") nextProfile();
@@ -166,7 +247,7 @@ export default function Home() {
             {activeProfile.image ? (
               <>
                 <img className="profile-backdrop" src={activeProfile.image} alt="" aria-hidden="true" style={{ objectPosition: activeProfile.imagePosition }} />
-                <img className="profile-main-photo" src={activeProfile.image} alt={`${activeProfile.name}个人照片`} style={{ objectPosition: activeProfile.imagePosition }} />
+                <div className="profile-photo-frame"><img className="profile-main-photo" src={activeProfile.image} alt={`${activeProfile.name}个人照片`} style={{ objectPosition: activeProfile.imagePosition }} /></div>
               </>
             ) : (
               <div className="profile-photo-placeholder">
