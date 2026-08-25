@@ -124,14 +124,13 @@ export const youthProfiles: YouthProfile[] = [
   {
     slot: 10,
     name: "邹欣妍",
-    department: "所属机构待补充",
+    department: "益阳市龙洲北路支行",
     role: "助理综合客户经理",
     image: "/people/10-zhouxinyan.webp",
     imageLayout: "landscape",
     imagePosition: "50% 50%",
-    intro: "邹欣妍的个人介绍待补充，敬请期待。",
-    reflection: "邹欣妍的廉洁感悟待补充，敬请期待。",
-    keyword: "待补充",
-    pending: true,
+    intro: "大家好，我是邹欣妍，现工作于益阳市龙洲北路支行。",
+    reflection: "作为银行青年员工，我视廉洁为职业第一准则。日常工作中严守规章制度，规范操作每一笔业务，对客户一视同仁、真诚服务，坚决抵制利益诱惑。以清正之心履职，以自律之行致远，筑牢基层金融一线的廉洁防线。",
+    keyword: "清正自律",
   },
 ];
